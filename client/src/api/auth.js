@@ -1,31 +1,42 @@
 export const baseUrl = "http://192.168.0.111:8000";
-export const signup = (user, email, pwd, setErr) => {
-  return fetch(baseUrl + "/user", {
+
+export const signup = async (user, email, pwd, setErr, setLoading) => {
+  const options = {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ userName: user, email, password: pwd }),
     credentials: "include",
-  })
-    .then((res) => {
-      if (res.status === 201) {
-        return res.json();
-      } else if (res.status === 400) {
-        setErr({ response: "UserName or Password Required!!" });
-      } else if (res.status === 500) {
-        setErr({ response: "Server error" });
-      } else {
-        setErr({ response: "No response from server" });
-      }
-    })
-    .then((data) => {
-      console.log(data);
-      return data;
-    });
+  };
+  try {
+    setLoading(true);
+    const responcee = await fetch(baseUrl + "/user", options);
+    if (!responcee.ok) throw responcee;
+    return await responcee.json();
+  } catch (error) {
+    console.log(error);
+    if (error.status === 400) {
+      return setErr({ response: "UserName or Password Required!!" });
+    } else if (error.status === 409) {
+      return setErr({ response: "This userName is taken" });
+    } else if (error.status === 500) {
+      return setErr({ response: "Server error" });
+    } else {
+      return setErr({ response: "No response from server" });
+    }
+  } finally {
+    setLoading(false);
+  }
 };
+let controller;
+export const login = async (user, pwd, setErr, setLoading) => {
+  if (controller) controller.abort();
 
-export const login = (user, pwd, setErr) => {
+  controller = new AbortController();
+
+  const signal = controller?.signal;
+  setLoading(true);
   const loginOptions = {
     method: "POST",
     mode: "cors",
@@ -37,32 +48,30 @@ export const login = (user, pwd, setErr) => {
       userName: user,
       password: pwd,
     }),
+    signal,
     // allow data to be sent with cookies
     credentials: "include",
   };
-  return fetch(baseUrl + "/login", loginOptions)
-    .then((res) => {
-      if (!res.ok) {
-        throw res;
-      }
-      return res.json();
-    })
-    .then((data) => {
-      return data;
-    })
-    .catch((error) => {
-      error.json().then(() => {
-        if (error.status === 400) {
-          setErr({ response: "UserName or Password Required!!" });
-        } else if (error.status === 401) {
-          setErr({ response: "Invalid username or password" });
-        } else if (error.status === 500) {
-          setErr({ response: "Server error" });
-        } else {
-          setErr({ response: "No response from server" });
-        }
-      });
-    });
+
+  try {
+    const response = await fetch(baseUrl + "/login", loginOptions);
+    if (!response.ok) throw response;
+    const data = await response.json();
+    return data.user;
+  } catch (error) {
+    console.error(error);
+    if (error.status === 400) {
+      return setErr({ response: "UserName or Password Required!!" });
+    } else if (error.status === 401) {
+      return setErr({ response: "Invalid username or password" });
+    } else if (error.status === 500) {
+      return setErr({ response: "Server error" });
+    } else {
+      return setErr({ response: "No response from server" });
+    }
+  } finally {
+    setLoading(false);
+  }
 };
 
 export const logout = () => {

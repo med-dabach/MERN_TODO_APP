@@ -11,6 +11,7 @@ const Login = () => {
   const [user, setUser] = useState("");
   const [pwd, setPwd] = useState("");
   const [err, setErr] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setErr(null);
@@ -29,14 +30,21 @@ const Login = () => {
       setErr(error);
     } else {
       dispatch(setError(null));
-      const logedInUser = await login(user, pwd, setErr);
+      let controller = null;
+     
+      const logedInUser = await login(
+        user,
+        pwd,
+        setErr,
+        setLoading,
+        controller
+      );
       dispatch(setuser({ user: logedInUser }));
       if (logedInUser) {
         navigate("/");
+        setUser("");
+        setPwd("");
       }
-      console.log(err);
-      setUser("");
-      setPwd("");
     }
   };
   return (
@@ -108,7 +116,7 @@ const Login = () => {
               {/*  */}
               <div className="flex items-center justify-between">
                 <button
-                  disabled={err}
+                  disabled={err || loading}
                   className="disabled:bg-green-200 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                 >
                   Login

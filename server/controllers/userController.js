@@ -186,7 +186,7 @@ exports.passwordResetToken = catchAsync(async (req, res, next) => {
 exports.passwordResetTokenVerify = catchAsync(async (req, res, next) => {
   const { newPassword, token, email } = req.body;
 
-  console.log(newPassword, token, email)
+  console.log(newPassword, token, email);
   if (!token || !email || !newPassword)
     return res.status(400).json({ status: "error", message: "Bad Request" });
 

@@ -12,6 +12,7 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
   const [err, setErr] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setErr(null);
@@ -41,12 +42,13 @@ const Signup = () => {
       // }
       setErr(error);
     } else {
-      const res = await signup(user, email, pwd, setErr);
-      console.log("res", await res);
-      dispatch(setError(null));
-      dispatch(setuser({ user: await res?.user }));
-      navigate("/");
-      // console.log(res);
+      const userr = await signup(user, email, pwd, setErr, setLoading);
+      console.log(userr);
+      if (userr?.user?.id) {
+        dispatch(setError(null));
+        dispatch(setuser({ user: userr.user }));
+        navigate("/");
+      }
     }
   };
 
@@ -70,6 +72,9 @@ const Signup = () => {
               className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 "
               onSubmit={handleSubmit}
             >
+              {err?.response && (
+                <p className="text-red-500 text-xs italic">{err.response}</p>
+              )}
               <div className="mb-4">
                 <label
                   className="block text-gray-700 text-sm font-bold mb-2"
@@ -137,10 +142,12 @@ const Signup = () => {
               </div>
               {/*  */}
               <div className="flex items-center justify-between">
-                <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                <button
+                  disabled={err || loading}
+                  className="disabled:opacity-55 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                >
                   Sign Up
                 </button>
-                
               </div>
             </form>
           </div>
