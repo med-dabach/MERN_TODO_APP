@@ -88,32 +88,33 @@ export const logout = () => {
     });
 };
 
-export const getPasswordReset = (email, setErr, setLoading) => {
-  setLoading(true);
-  return fetch(baseUrl + "/passwordreset", {
+export const getPasswordReset = async (email, setErr, setLoading) => {
+  const config = {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ email }),
-  })
-    .then((res) => {
-      return res.json();
-    })
-    .then((data) => data)
-    .catch((error) => {
-      if (error.status === 400) {
-        setErr({ response: "Email Required!!" });
-      } else if (error.status === 404) {
-        setErr({ response: "Email not found" });
-      } else if (error.status === 500) {
-        setErr({ response: "Server error" });
-      } else {
-        setErr({ response: "No response from server" });
-      }
-      console.error(error);
-    })
-    .finally(() => setLoading(false));
+  };
+  try {
+    setLoading(true);
+    const responce = await fetch(baseUrl + "/passwordreset", config);
+    if (!responce.ok) throw responce;
+    return true;
+  } catch (error) {
+    console.error(error);
+    if (error.status === 400) {
+      setErr({ response: "Email Required!!" });
+    } else if (error.status === 404) {
+      setErr({ response: "Email not found" });
+    } else if (error.status === 500) {
+      setErr({ response: "Server error" });
+    } else {
+      setErr({ response: "No response from server" });
+    }
+  } finally {
+    setLoading(false);
+  }
 };
 
 export const newPassword = (newPassword, token, email, setErr, setLoading) => {

@@ -163,23 +163,25 @@ exports.passwordResetToken = catchAsync(async (req, res, next) => {
     return res.status(400).json({ status: "error", message: "Bad Request" });
 
   const user = await User.findOne({ email });
-  if (!user) res.status(404).json({ status: "error", message: "Not Found" });
+  if (!user)
+    return res.status(404).json({ status: "error", message: "Not Found" });
 
   // random token
   const token = crypto.randomBytes(32).toString("hex");
 
-  const result = await User.findByIdAndUpdate(user.id, {
+  const result = await User.findByIdAndUpdate(user?.id, {
     passwordReset: {
       token: await bcrypt.hash(token, 12),
       expires: Date.now() + 60 * 60 * 1000,
     },
   });
-  if (!result)
-    res.status(500).json({
-      status: "error",
 
+  if (!result) {
+    return res.status(500).json({
+      status: "error",
       message: "Couldn't generate passwordReset token for this user ",
     });
+  }
 
   sendEmailNodeMailer(token, email, res);
 });
@@ -230,9 +232,9 @@ const sendEmailNodeMailer = async (token, email, res) => {
     port: 587,
     host: "smtp.gmail.com",
     subject: "Password Reset",
-    html: `<h1>Click on the link to reset your password</h1>
-      <p>${process.env.CLIENT_URL}/newpassword?token=${token}&email=${email}</p>`,
-    secure: false,
+    // html template
+    html: emailTempate(process.env.CLIENT_URL, token, email),
+    secure: process.env.NODE_ENV === "production" ? true : false,
   };
 
   try {
@@ -244,4 +246,79 @@ const sendEmailNodeMailer = async (token, email, res) => {
       .status(500)
       .json({ status: "error", error, message: "Couldn't send email" });
   }
+};
+
+const emailTempate = (host, token, email) => {
+  return `<!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Password Reset</title>
+      <style>
+          body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 0;
+              background-color: #f4f4f4;
+          }
+          .container {
+              max-width: 600px;
+              margin: 20px auto;
+              padding: 20px;
+              background-color: #fff;
+              border-radius: 5px;
+              box-shadow: 0 0 10px rgba(0,0,0,0.1);
+          }
+          h2 {
+              color: #333;
+          }
+          p {
+              color: #666;
+          }
+          .btn {
+              display: inline-block;
+              background-color: #007bff;
+              color: white !important;
+              text-decoration: none;
+              padding: 10px 20px;
+              border-radius: 5px;
+          }
+          .btn:hover {
+              background-color: #0056b3;
+          }
+          .font-bold {
+            font-weight: 700;
+        }
+        .text-lg {
+            font-size: 1.125rem;
+        }
+        .text-green-500 {
+            color: #48bb78;
+        }
+        .text-gray-800 {
+            color: #2d3748;
+        }
+        .logo {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background-image: url('path_to_your_logo.png');
+            background-size: cover;
+            margin-right: 5px;
+        }
+      </style>
+  </head>
+  <body>
+      <div class="container">
+      <h1 class="font-bold text-lg"><span class="text-green-500">Daily</span><span class="text-gray-800">Todo</span></h1>
+          <h2>Password Reset</h2>
+          <p>Click on the link below to reset your password:</p>
+          <a class="btn" href="${host}/newpassword?token=${token}&email=${email}">Reset Password</a>
+          <p>If you did not request a password reset, please ignore this email.</p>
+          <p>Best regards,<br>DABACH</p>
+      </div>
+  </body>
+  </html>
+  `;
 };

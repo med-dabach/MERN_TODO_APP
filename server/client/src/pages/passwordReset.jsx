@@ -18,11 +18,16 @@ const PasswordReset = () => {
     e.preventDefault();
     if (!email) {
       setErr({ email: "Please enter a valid email" });
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setErr({ email: "Please enter a valid email" });
     } else {
       try {
-        await getPasswordReset(email, setErr, setLoading);
-        setErr({ success: "Password reset link sent to your email" });
-        setTimeout(() => navigate("/login"), 3000);
+        if (
+          (await getPasswordReset(email, setErr, setLoading))
+        ) {
+          setErr({ success: "Password reset link sent to your email" });
+          setTimeout(() => navigate("/login"), 3000);
+        }
       } catch (e) {
         console.error(e);
       }
@@ -66,7 +71,7 @@ const PasswordReset = () => {
               <div className="mb-4">
                 <label
                   className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="username"
+                  htmlFor="email"
                 >
                   Email
                 </label>
@@ -76,7 +81,7 @@ const PasswordReset = () => {
                   } shadow appearance-none border rounded w-full py-2 px-3 mb-1 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
                   id="username"
                   type="text"
-                  placeholder="Username"
+                  placeholder="Email"
                   onChange={(e) => setEmail(e.target.value)}
                   value={email}
                 />
