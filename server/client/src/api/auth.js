@@ -1,6 +1,11 @@
 export const baseUrl = "/api";
 
 export const signup = async (user, email, pwd, setErr, setLoading) => {
+  // trim the user input
+  user = user.trim();
+  email = email.trim();
+  pwd = pwd.trim();
+
   const options = {
     method: "POST",
     headers: {

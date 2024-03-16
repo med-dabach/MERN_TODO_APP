@@ -30,15 +30,8 @@ const Login = () => {
       setErr(error);
     } else {
       dispatch(setError(null));
-      let controller = null;
 
-      const logedInUser = await login(
-        user,
-        pwd,
-        setErr,
-        setLoading,
-        controller
-      );
+      const logedInUser = await login(user, pwd, setErr, setLoading);
       dispatch(setuser({ user: logedInUser }));
       if (logedInUser) {
         navigate("/");
