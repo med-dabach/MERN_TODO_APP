@@ -24,12 +24,17 @@ const NewPassword = () => {
     if (!password || !confirmPassword) {
       setError("Please fill in all fields");
       return;
-    }
-    if (password !== confirmPassword) {
+    } else if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
+    } else if (
+      !/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm.test(password)
+    ) {
+      setError(
+        "Password must contain at least 8 characters, including UPPER/lowercase and numbers"
+      );
+      return;
     }
-
     try {
       await newPassword(password, token, email, setError, setLoading);
       setSuccess(true);
