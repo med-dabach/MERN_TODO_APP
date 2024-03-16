@@ -25,8 +25,7 @@ const TodoItem = ({ todo }) => {
   }
 
   async function handleDelete() {
-    console.log(await deleteTodoApi(todo?._id));
-    dispatch(deleteTodo({ id: todo?._id }));
+    if (await deleteTodoApi(todo?._id)) dispatch(deleteTodo({ id: todo?._id }));
   }
 
   const dateTime = new Date(todo?.createdAt);

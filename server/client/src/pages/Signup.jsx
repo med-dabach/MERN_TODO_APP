@@ -27,23 +27,21 @@ const Signup = () => {
       }
       if (!email) {
         error.email = "Please enter a email";
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        error.email = "Please enter a valid email";
       }
-      // else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      //   error.email = "Please enter a valid email";
-      // }
       if (!pwd) {
         error.pwd = "Please enter a password";
+      } else if (
+        !/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm.test(pwd)
+      ) {
+        error.pwd =
+          "Password must contain at least 8 characters, including UPPER/lowercase and numbers";
       }
-      //  else if (
-      //   !/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm.test(pwd)
-      // ) {
-      //   error.pwd =
-      //     "Password must contain at least 8 characters, including UPPER/lowercase and numbers";
-      // }
       setErr(error);
     } else {
       const userr = await signup(user, email, pwd, setErr, setLoading);
-      console.log(userr);
+
       if (userr?.user?.id) {
         dispatch(setError(null));
         dispatch(setuser({ user: userr.user }));

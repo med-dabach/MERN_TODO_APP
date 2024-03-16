@@ -88,7 +88,8 @@ export const logout = () => {
     });
 };
 
-export const getPasswordReset = (email, setErr) => {
+export const getPasswordReset = (email, setErr, setLoading) => {
+  setLoading(true);
   return fetch(baseUrl + "/passwordreset", {
     method: "POST",
     headers: {
@@ -111,7 +112,8 @@ export const getPasswordReset = (email, setErr) => {
         setErr({ response: "No response from server" });
       }
       console.error(error);
-    });
+    })
+    .finally(() => setLoading(false));
 };
 
 export const newPassword = (newPassword, token, email, setErr, setLoading) => {

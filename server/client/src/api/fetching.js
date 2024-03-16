@@ -23,7 +23,8 @@ export const getTodos = (page, navigate) => {
     });
 };
 
-export const addTodo = (todo) => {
+export const addTodo = (todo, setLoading) => {
+  setLoading(true);
   return fetch(baseUrl + "/todo", {
     method: "POST",
     headers: {
@@ -38,7 +39,8 @@ export const addTodo = (todo) => {
     .then((data) => data)
     .catch((error) => {
       console.error(error);
-    });
+    })
+    .finally(() => setLoading(false));
 };
 
 export const deleteTodo = (id) => {
@@ -47,9 +49,10 @@ export const deleteTodo = (id) => {
     credentials: "include",
   })
     .then((res) => {
-      return res.json();
+      if (res.status === 204) return true;
+      else return false;
     })
-    .then((data) => console.log(data))
+    .then((data) => data)
     .catch((error) => {
       console.error(error);
     });

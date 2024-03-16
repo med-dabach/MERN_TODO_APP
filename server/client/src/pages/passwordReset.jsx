@@ -6,8 +6,9 @@ import { useNavigate } from "react-router-dom";
 
 const PasswordReset = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("tawsattawsat130@gmail.com");
+  const [email, setEmail] = useState("");
   const [err, setErr] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setErr(null);
@@ -19,12 +20,12 @@ const PasswordReset = () => {
       setErr({ email: "Please enter a valid email" });
     } else {
       try {
-        await getPasswordReset(email, setErr);
+        await getPasswordReset(email, setErr, setLoading);
+        setErr({ success: "Password reset link sent to your email" });
+        setTimeout(() => navigate("/login"), 3000);
       } catch (e) {
         console.error(e);
       }
-      setEmail("");
-      navigate("/login");
     }
   };
 
@@ -58,6 +59,9 @@ const PasswordReset = () => {
               {err?.response && (
                 <p className="text-red-500 text-xs italic">{err?.response}</p>
               )}
+              {err?.success && (
+                <p className="text-green-500 text-xs italic">{err?.success}</p>
+              )}
               {/*  */}
               <div className="mb-4">
                 <label
@@ -83,7 +87,7 @@ const PasswordReset = () => {
 
               <div className="flex items-center justify-between">
                 <button
-                  disabled={err}
+                  disabled={err || loading}
                   className="disabled:bg-green-200 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                 >
                   Send

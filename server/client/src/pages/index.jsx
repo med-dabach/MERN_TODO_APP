@@ -15,7 +15,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { addTodo, getTodos } from "../api/fetching";
-import { setTodo, setTodos, setPage } from "../redux/slices/todoSlice";
+import { setTodos, setPage } from "../redux/slices/todoSlice";
 
 const Index = () => {
   const dispatch = useDispatch();
@@ -35,6 +35,7 @@ const Index = () => {
   const [newTodo, setNewTodo] = useState("");
   const [priority, setPriority] = useState("");
   const [error, setError] = useState({});
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (authError) {
@@ -65,14 +66,13 @@ const Index = () => {
       return;
     } else {
       setError({});
-      await addTodo({ name: newTodo, priority });
+      await addTodo({ name: newTodo, priority }, setLoading);
 
       const fetchTodos = async () => {
         const result = await getTodos(todosPage, navigate);
         dispatch(setTodos(result));
       };
       fetchTodos();
-
       setNewTodo("");
       setPriority("");
     }
@@ -141,8 +141,8 @@ const Index = () => {
 
               <button
                 onClick={handleClick}
-                disabled={false}
-                className="bg-green-500 block order-3 border-white border-[1.2px] disabled:bg-green-300 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                disabled={loading}
+                className="disabled:opacity-55 bg-green-500 block order-3 border-white border-[1.2px] disabled:bg-green-300 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               >
                 Add Todo
               </button>
