@@ -13,7 +13,7 @@ import {
   userSelector,
 } from "../redux/selectors";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { addTodo, getTodos } from "../api/fetching";
 import { setTodos, setPage } from "../redux/slices/todoSlice";
 
@@ -37,6 +37,8 @@ const Index = () => {
   const [error, setError] = useState({});
   const [loading, setLoading] = useState(false);
 
+  const [loadingTodos, setLoadingTodos] = useState(false);
+
   useEffect(() => {
     if (authError) {
       navigate("/login");
@@ -46,14 +48,13 @@ const Index = () => {
   useEffect(() => {
     setError({});
   }, [newTodo, priority]);
-
-  useEffect(() => {
-    const fetchTodos = async () => {
-      const result = await getTodos(todosPage, navigate);
-      dispatch(setTodos(result));
-    };
-    fetchTodos();
+  const fetchTodos = useCallback(async () => {
+    const result = await getTodos(todosPage, navigate, setLoadingTodos);
+    dispatch(setTodos(result));
   }, [dispatch, navigate, todosPage]);
+  useEffect(() => {
+    fetchTodos();
+  }, [fetchTodos]);
 
   const handleClick = async (e) => {
     e.preventDefault();
@@ -68,10 +69,6 @@ const Index = () => {
       setError({});
       await addTodo({ name: newTodo, priority }, setLoading);
 
-      const fetchTodos = async () => {
-        const result = await getTodos(todosPage, navigate);
-        dispatch(setTodos(result));
-      };
       fetchTodos();
       setNewTodo("");
       setPriority("");
@@ -92,7 +89,7 @@ const Index = () => {
   const filterd = filterTodos();
 
   const displayTodos = () =>
-    filterd?.length > 0 ? (
+    filterd?.length > 0 && !loadingTodos ? (
       filterd.map((todo) => <TodoItem key={todo?._id} todo={todo} />)
     ) : (
       <p className="text-center text-gray-300">No todos found</p>
@@ -169,78 +166,83 @@ const Index = () => {
               </form>
             </div>
 
-            {/* <div className="relative flex justify-center items-center text-gray-700 bg-white shadow-md  rounded-xl bg-clip-border"> */}
             <ul className="flex min-w-[240px] max-w-[500px] w-full m-auto flex-col gap-1 p-2 font-sans text-base font-normal text-green-gray-700">
-              {/* <TodoItem key></TodoItem> */}
               {displayTodos()}
+              {loadingTodos && <p className="text-center">Loading...</p>}
             </ul>
             {/* </div> */}
             {/*  */}
-            <div className="flex  flex-col items-center gap-3 mt-5">
-              {" "}
-              <span className="text-sm text-gray-700 dark:text-gray-400">
-                Showing from
-                <span className="font-semibold text-gray-900">
-                  {" "}
-                  {todosFrom + 1} to
+            {filterd && (
+              <div className="flex  flex-col items-center gap-3 mt-5">
+                {" "}
+                <span className="text-sm text-gray-700 dark:text-gray-400">
+                  Showing from
+                  <span className="font-semibold text-gray-900">
+                    {" "}
+                    {todosFrom + 1} to
+                  </span>
+                  <span className="font-semibold text-gray-900">
+                    {" "}
+                    {todosTo}
+                  </span>{" "}
+                  of
+                  <span className="font-semibold text-gray-900">
+                    {" "}
+                    {todosResultsCount}
+                  </span>{" "}
+                  Entries
                 </span>
-                <span className="font-semibold text-gray-900"> {todosTo}</span>{" "}
-                of
-                <span className="font-semibold text-gray-900">
-                  {" "}
-                  {todosResultsCount}
-                </span>{" "}
-                Entries
-              </span>
-              <div className="flex justify-center">
-                <button
-                  disabled={todosPage - 1 === 0}
-                  onClick={handlePrevPage}
-                  className={`disabled:opacity-55 flex items-center justify-center px-4 h-10 me-3 text-base font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:textgray-700`}
-                >
-                  <svg
-                    className="w-3.5 h-3.5 me-2 rtl:rotate-180"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 14 10"
+                <div className="flex justify-center">
+                  <button
+                    disabled={todosPage - 1 === 0}
+                    onClick={handlePrevPage}
+                    className={`disabled:opacity-55 flex items-center justify-center px-4 h-10 me-3 text-base font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:textgray-700`}
                   >
-                    <path
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 5H1m0 0 4 4M1 5l4-4"
-                    />
-                  </svg>
-                  Previous
-                </button>
-                <button
-                  disabled={
-                    Math.floor(todosResultsCount / todosLimit + 1) === todosPage
-                  }
-                  onClick={handleNextPage}
-                  className={`disabled:opacity-55 flex items-center justify-center px-4 h-10 text-base font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700`}
-                >
-                  Next
-                  <svg
-                    className="w-3.5 h-3.5 ms-2 rtl:rotate-180"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 14 10"
+                    <svg
+                      className="w-3.5 h-3.5 me-2 rtl:rotate-180"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 14 10"
+                    >
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 5H1m0 0 4 4M1 5l4-4"
+                      />
+                    </svg>
+                    Previous
+                  </button>
+                  <button
+                    disabled={
+                      Math.floor(todosResultsCount / todosLimit + 1) ===
+                      todosPage
+                    }
+                    onClick={handleNextPage}
+                    className={`disabled:opacity-55 flex items-center justify-center px-4 h-10 text-base font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700`}
                   >
-                    <path
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M1 5h12m0 0L9 1m4 4L9 9"
-                    />
-                  </svg>
-                </button>
+                    Next
+                    <svg
+                      className="w-3.5 h-3.5 ms-2 rtl:rotate-180"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 14 10"
+                    >
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M1 5h12m0 0L9 1m4 4L9 9"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
             {/*  */}
             <footer className="bg-white rounded-lg shadow m-4">
               <div className="flex items-center justify-between px-5 py-4">

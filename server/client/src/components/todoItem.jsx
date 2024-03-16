@@ -1,17 +1,22 @@
-import { useEffect, useState } from "react";
-import { deleteTodo as deleteTodoApi, updateTodo } from "../api/fetching";
+import { useEffect, useState, useRef } from "react";
+import { deleteTodo, updateTodo } from "../api/fetching";
 import PropTypes from "prop-types";
 import { useDispatch } from "react-redux";
-import { deleteTodo } from "../redux/slices/todoSlice";
+import { deleteTodo as deleteTodoAction } from "../redux/slices/todoSlice";
 
 const TodoItem = ({ todo }) => {
   const [checked, setChecked] = useState(todo?.isDone);
+  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
-  // console.log(todo);
+  const firstRender = useRef(true);
   useEffect(() => {
-    if (todo?.isDone === checked) return;
-    updateTodo({ ...todo, isDone: checked });
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    updateTodo({ ...todo, isDone: checked }, setLoading);
   }, [checked, todo]);
+
   function determineColor(priority) {
     // console.log(priority);
     switch (priority) {
@@ -25,14 +30,15 @@ const TodoItem = ({ todo }) => {
   }
 
   async function handleDelete() {
-    if (await deleteTodoApi(todo?._id)) dispatch(deleteTodo({ id: todo?._id }));
+    if (await deleteTodo(todo?._id, setLoading))
+      dispatch(deleteTodoAction({ id: todo?._id }));
   }
 
   const dateTime = new Date(todo?.createdAt);
 
   // Extracting date components
   const year = dateTime.getFullYear();
-  const month = dateTime.getMonth() + 1; // Months are zero-based, so add 1
+  const month = dateTime.getMonth() + 1;
   const day = dateTime.getDate();
   const hours = dateTime.getHours();
   const minutes = dateTime.getMinutes();
@@ -48,7 +54,7 @@ const TodoItem = ({ todo }) => {
 
   return (
     <>
-      <li className="grid  grid-cols-[auto_1fr_auto] items-center w-full p-3 border border-b-[1px] leading-tight transition-all rounded-lg outline-none text-start hover:bg-blue-gray-50 hover:bg-opacity-80 hover:text-blue-gray-900 focus:bg-blue-gray-50 focus:bg-opacity-80 focus:text-blue-gray-900 active:bg-blue-gray-50 active:bg-opacity-80 active:text-blue-gray-900">
+      <li className=" grid  grid-cols-[auto_1fr_auto] items-center w-full p-3 border border-b-[1px] leading-tight transition-all rounded-lg outline-none text-start hover:bg-blue-gray-50 hover:bg-opacity-80 hover:text-blue-gray-900 focus:bg-blue-gray-50 focus:bg-opacity-80 focus:text-blue-gray-900 active:bg-blue-gray-50 active:bg-opacity-80 active:text-blue-gray-900">
         <div className="grid mr-4 place-items-center">
           <div className="flex items-center ">
             <div className="inline-flex items-center">
@@ -58,9 +64,10 @@ const TodoItem = ({ todo }) => {
               >
                 <input
                   type="checkbox"
-                  className="before:content[''] peer relative h-6 w-6 cursor-pointer appearance-none rounded-md border-[1.5px] border-blue-gray-200 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-blue-gray-500 before:opacity-0 before:transition-opacity checked:border-green-500 checked:bg-green-500 checked:before:bg-green-500 hover:before:opacity-10"
+                  className="disabled:cursor-not-allowed before:content[''] peer relative h-6 w-6 cursor-pointer appearance-none rounded-md border-[1.5px] border-blue-gray-200 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-blue-gray-500 before:opacity-0 before:transition-opacity checked:border-green-500 checked:bg-green-500 checked:before:bg-green-500 hover:before:opacity-10"
                   id="amber"
                   checked={checked}
+                  disabled={loading}
                   onChange={(e) => setChecked(e.target.checked)}
                 />
                 <span className="absolute text-white transition-opacity opacity-0 pointer-events-none top-2/4 left-2/4 -translate-y-2/4 -translate-x-2/4 peer-checked:opacity-100">
@@ -102,8 +109,9 @@ const TodoItem = ({ todo }) => {
         </div>
         <div className="me-2">
           <button
+            disabled={loading}
             onClick={handleDelete}
-            className="hover:bg-red-400 bg-transparent border-red-400 border-[1px] hover:text-white text-red-400 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            className="disabled:cursor-not-allowed hover:bg-red-400 bg-transparent border-red-400 border-[1px] hover:text-white text-red-400 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
           >
             Delete
           </button>

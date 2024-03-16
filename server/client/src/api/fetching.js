@@ -1,6 +1,7 @@
 import { baseUrl } from "./auth";
 
-export const getTodos = (page, navigate) => {
+export const getTodos = async (page, navigate, setLoading) => {
+  setLoading(true);
   return fetch(
     baseUrl +
       "/todo?fields=name,isDone,createdAt,id,priority" +
@@ -12,18 +13,18 @@ export const getTodos = (page, navigate) => {
     }
   )
     .then((res) => {
-      if (res.status === 401) {
-        return navigate("/login");
-      }
-      return res.json();
+      if (res.ok) return res.json();
+      throw res;
     })
     .then((data) => data)
     .catch((error) => {
+      if (error.status === 401) return navigate("/login");
       console.error(error);
-    });
+    })
+    .finally(() => setLoading(false));
 };
 
-export const addTodo = (todo, setLoading) => {
+export const addTodo = async (todo, setLoading) => {
   setLoading(true);
   return fetch(baseUrl + "/todo", {
     method: "POST",
@@ -34,7 +35,7 @@ export const addTodo = (todo, setLoading) => {
     credentials: "include",
   })
     .then((res) => {
-      return res.json();
+      return res.ok;
     })
     .then((data) => data)
     .catch((error) => {
@@ -43,7 +44,8 @@ export const addTodo = (todo, setLoading) => {
     .finally(() => setLoading(false));
 };
 
-export const deleteTodo = (id) => {
+export const deleteTodo = (id, setLoading) => {
+  setLoading(true);
   return fetch(baseUrl + "/todo/" + id, {
     method: "DELETE",
     credentials: "include",
@@ -55,11 +57,12 @@ export const deleteTodo = (id) => {
     .then((data) => data)
     .catch((error) => {
       console.error(error);
-    });
+    })
+    .finally(() => setLoading(false));
 };
 
-export const updateTodo = (todo) => {
-  // console.log(todo._id);
+export const updateTodo = (todo, setLoading) => {
+  setLoading(true);
   return fetch(baseUrl + "/todo/" + todo?._id, {
     method: "PATCH",
     headers: {
@@ -69,10 +72,11 @@ export const updateTodo = (todo) => {
     credentials: "include",
   })
     .then((res) => {
-      return res.json();
+      return res.ok;
     })
     .then((data) => data)
     .catch((error) => {
       console.error(error);
-    });
+    })
+    .finally(() => setLoading(false));
 };

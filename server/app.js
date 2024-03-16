@@ -54,7 +54,7 @@ app.use(mongoSanitize());
 app.use(
   rateLimit({
     windowMs: 15 * 1000,
-    max: 7,
+    max: 12,
     message: "Too many requests from this IP, please try again later.",
   })
 );
