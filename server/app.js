@@ -2,16 +2,10 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const path = require("path");
 
 // allow all origins
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:8000",
-  "http://localhost:4173",
-  "http://192.168.0.111:5173",
-  "http://192.168.0.111:5173",
-  null,
-];
+const allowedOrigins = [process.env.PROD_URL, "http://localhost:8000"];
 
 app.use(
   cors({
@@ -50,6 +44,7 @@ app.use(cookieParser());
 
 // security
 app.use(helmet());
+
 app.use(xss());
 app.use(mongoSanitize());
 app.use(
@@ -61,15 +56,23 @@ app.use(
 );
 
 // routes
-app.use("/todo", auth, todoRouter);
+app.use("/api/todo", auth, todoRouter);
 
-app.use("/user", userRouter);
+app.use("/api/user", userRouter);
 
-app.use("/login", loginRouter);
+app.use("/api/login", loginRouter);
 
-app.use("/logout", auth, logoutRouter);
+app.use("/api/logout", auth, logoutRouter);
 
-app.use("/passwordreset", passwordResetRouter);
+app.use("/api/passwordreset", passwordResetRouter);
+
+// serve static files ../client/dist to every request
+app.use(express.static("./client/dist"));
+
+// serve index.html for all get() requests
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "./client/dist/index.html"));
+});
 
 // error handler
 app.use(errorHandler);

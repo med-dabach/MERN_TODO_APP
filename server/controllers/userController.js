@@ -13,6 +13,7 @@ const createJwt = (user, res, statusCode) => {
   res.cookie("token", token, {
     httpOnly: true,
     sameSite: "lax", // Use 'lax' or 'strict' instead of 'none'
+    secure: process.env.NODE_ENV === "production" ? true : false,
     credentials: true,
     expiresIn: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   });
@@ -186,7 +187,6 @@ exports.passwordResetToken = catchAsync(async (req, res, next) => {
 exports.passwordResetTokenVerify = catchAsync(async (req, res, next) => {
   const { newPassword, token, email } = req.body;
 
-  console.log(newPassword, token, email);
   if (!token || !email || !newPassword)
     return res.status(400).json({ status: "error", message: "Bad Request" });
 

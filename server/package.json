@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node --watch server.js"
+    "start": "node --watch server.js",
+    "build": "npm i --prefix ./client && npm run build --prefix ./client && npm i"
   },
   "keywords": [],
-  "author": "",
+  "author": "dabach",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",

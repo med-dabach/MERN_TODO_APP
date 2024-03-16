@@ -6,7 +6,6 @@ const Todo = require("../models/todo"),
 
 exports.getAllTodos = catchAsync(async (req, res, next) => {
   const user = req.user;
-  console.log(user);
 
   const fields = req.query?.fields?.split(",").join(" ");
 
@@ -66,7 +65,7 @@ exports.addTodo = catchAsync(async (req, res, next) => {
 exports.updateTodoState = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const { isDone } = req.body;
-  console.log(req.body);
+
   const result = await Todo.findByIdAndUpdate(id, {
     isDone,
   });
