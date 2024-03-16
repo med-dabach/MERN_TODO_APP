@@ -5,7 +5,11 @@ const cookieParser = require("cookie-parser");
 const path = require("path");
 
 // allow all origins
-const allowedOrigins = [process.env.PROD_URL, "http://localhost:8000"];
+const allowedOrigins = [
+  process.env.PROD_URL,
+  "http://localhost:8000",
+  "http://localhost:5173",
+];
 
 app.use(
   cors({

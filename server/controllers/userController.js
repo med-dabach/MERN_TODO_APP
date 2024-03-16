@@ -193,13 +193,14 @@ exports.passwordResetTokenVerify = catchAsync(async (req, res, next) => {
     return res.status(400).json({ status: "error", message: "Bad Request" });
 
   const user = await User.findOne({ email });
-  if (!user) res.status(404).json({ status: "error", message: "Not Found" });
+  if (!user)
+    return res.status(404).json({ status: "error", message: "Not Found" });
 
   if (user.passwordReset.expires < Date.now())
-    res.status(401).json({ status: "error", message: "Expired token" });
+    return res.status(401).json({ status: "error", message: "Expired token" });
 
   if (!(await bcrypt.compare(token, user.passwordReset.token)))
-    res.status(401).json({ status: "error", message: "Invalid token" });
+    return res.status(401).json({ status: "error", message: "Invalid token" });
 
   if (
     await User.findByIdAndUpdate(user.id, {

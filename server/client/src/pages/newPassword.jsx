@@ -35,12 +35,10 @@ const NewPassword = () => {
       );
       return;
     }
-    try {
-      await newPassword(password, token, email, setError, setLoading);
+
+    if (await newPassword(password, token, email, setError, setLoading)) {
       setSuccess(true);
       setTimeout(() => navigate("/login"), 3000);
-    } catch (error) {
-      setError("Failed to set new password. Please try again.");
     }
   };
 
@@ -54,7 +52,9 @@ const NewPassword = () => {
             onSubmit={handleSubmit}
           >
             <h2 className="text-xl font-bold mb-4">Set New Password</h2>
-            {error && <p className="text-red-500 text-xs italic">{error}</p>}
+            {error?.response && (
+              <p className="text-red-500 text-xs italic">{error?.response}</p>
+            )}
             {success && (
               <p className="text-green-500 text-xs italic">
                 Password set successfully. Redirecting to login page...

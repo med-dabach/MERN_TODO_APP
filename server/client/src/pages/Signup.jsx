@@ -20,26 +20,28 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user || !pwd) {
-      let error = {};
-      if (!user) {
-        error.user = "Please enter a username";
-      }
-      if (!email) {
-        error.email = "Please enter a email";
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        error.email = "Please enter a valid email";
-      }
-      if (!pwd) {
-        error.pwd = "Please enter a password";
-      } else if (
-        !/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm.test(pwd)
-      ) {
-        error.pwd =
-          "Password must contain at least 8 characters, including UPPER/lowercase and numbers";
-      }
-      setErr(error);
-    } else {
+
+    let error = {};
+    if (!user) {
+      error.user = "Please enter a username";
+    }
+    if (!email) {
+      error.email = "Please enter a email";
+    } else if (!pwd) {
+      error.pwd = "Please enter a password";
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      error.email = "Please enter a valid email";
+    }
+    if (
+      !/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,16}$/.test(pwd)
+    ) {
+      error.pwd =
+        "Password must contain at least 8 characters, including UPPER/lowercase and numbers";
+    }
+    setErr(error);
+    if (!error.user && !error.email && !error.pwd) {
       const userr = await signup(user, email, pwd, setErr, setLoading);
 
       if (userr?.user?.id) {

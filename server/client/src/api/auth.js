@@ -135,7 +135,7 @@ export const newPassword = (newPassword, token, email, setErr, setLoading) => {
       if (!res.ok) {
         throw res;
       }
-      return res.json();
+      return res.ok;
     })
     .then((data) => data)
     .catch((error) => {
@@ -148,7 +148,6 @@ export const newPassword = (newPassword, token, email, setErr, setLoading) => {
       } else {
         setErr({ response: "No response from server" });
       }
-      console.error(error);
     })
     .finally(() => setLoading(false));
 };
