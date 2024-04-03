@@ -48,10 +48,12 @@ const Index = () => {
   useEffect(() => {
     setError({});
   }, [newTodo, priority]);
+
   const fetchTodos = useCallback(async () => {
     const result = await getTodos(todosPage, navigate, setLoadingTodos);
     dispatch(setTodos(result));
   }, [dispatch, navigate, todosPage]);
+  
   useEffect(() => {
     fetchTodos();
   }, [fetchTodos]);

@@ -75,6 +75,7 @@ app.use(express.static("./client/dist"));
 
 // serve index.html for all get() requests
 app.get("*", (req, res) => {
+  
   res.sendFile(path.resolve(__dirname, "./client/dist/index.html"));
 });
 
