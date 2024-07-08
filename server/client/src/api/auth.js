@@ -34,6 +34,7 @@ export const signup = async (user, email, pwd, setErr, setLoading) => {
     setLoading(false);
   }
 };
+
 let controller;
 export const login = async (user, pwd, setErr, setLoading) => {
   if (controller) controller.abort();
