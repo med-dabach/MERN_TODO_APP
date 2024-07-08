@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node --watch server.js",
+    "start": "nodemon  server.js",
     "build": "npm i --prefix ./client && npm i && npm run build --prefix ./client "
   },
   "keywords": [],
@@ -23,6 +23,7 @@
     "mongoose": "^8.2.1",
     "morgan": "^1.10.0",
     "nodemailer": "^6.9.12",
+    "nodemon": "^3.1.4",
     "xss-clean": "^0.1.4"
   }
 }
